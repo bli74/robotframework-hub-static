@@ -37,3 +37,6 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Setup Chrome
       uses: browser-actions/setup-chrome@latest
+    - name: Run Robot tests
+      run: |
+        robot -A tests/conf/default.args tests

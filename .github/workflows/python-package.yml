@@ -25,9 +25,9 @@ steps:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install Robot framework version ${{ robot-version }}
+    - name: Install Robot framework version ${{ matrix.robot-version }}
       run: |
-        python -m pip install robotframework==${{ robot-version }}
+        python -m pip install robotframework==${{ matrix.robot-version }}
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip

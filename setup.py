@@ -13,11 +13,13 @@ filename = 'rfhub/version.py'
 exec(open(filename).read())
 
 setup(
-    name             = 'robotframework-hub',
+    name             = 'robotframework-hub-bli',
     version          = __version__,
     author           = 'Bryan Oakley',
     author_email     = 'bryan.oakley@gmail.com',
-    url              = 'https://github.com/boakley/robotframework-hub/',
+    maintainer       = 'Bert Lindemann',
+    maintainer_email = 'bert.lindemann@gmail.com',
+    url              = 'https://github.com/bli74/robotframework-hub/',
     keywords         = 'robotframework',
     license          = 'Apache License 2.0',
     description      = 'Webserver for robot framework assets',

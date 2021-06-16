@@ -42,6 +42,3 @@ jobs:
         with:
             # The Chromium version to install and use.
             chromium-version: # optional
-    - name: Run robot tests
-      run: |
-        robot -A tests/conf/default.args tests

@@ -9,7 +9,8 @@ in rfhub/version.py and then run the following commands:
 """
 from setuptools import setup
 
-filename = 'rfhub/version.py'
+filename    = 'rfhub/version.py'
+__version__ = "0.0.0"
 exec(open(filename).read())
 
 setup(

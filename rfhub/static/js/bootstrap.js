@@ -1632,7 +1632,7 @@ if (typeof jQuery === 'undefined') { throw new Error('Bootstrap\'s JavaScript re
         '[data-target="' + target + '"],' +
         this.selector + '[href="' + target + '"]'
 
-    var active = $(selector)
+    var active = $.find(selector)
       .parents('li')
       .addClass('active')
 

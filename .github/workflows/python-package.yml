@@ -17,6 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.7, 3.8, 3.9]
+        robot-version:  ['==3.2.2', '>=4.0']
 
     steps:
     - uses: actions/checkout@v2
@@ -27,7 +28,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8 pytest robotframework==3.2.2
+        python -m pip install flake8 pytest robotframework${{ matrix.robot-version }}
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |

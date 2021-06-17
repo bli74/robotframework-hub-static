@@ -1,13 +1,16 @@
 """Flask blueprint for showing keyword documentation"""
 
+import json
+
 import flask
 from flask import current_app
-import json
+
 from rfhub.version import __version__
 
 blueprint = flask.Blueprint('doc', __name__,
                             template_folder="templates",
                             static_folder="static")
+
 
 @blueprint.route("/")
 @blueprint.route("/keywords/")
@@ -25,7 +28,7 @@ def doc():
                                        "libdoc": None,
                                        "hierarchy": hierarchy,
                                        "resource_files": resource_files
-                                   })
+                                       })
 
 
 @blueprint.route("/index")
@@ -40,7 +43,7 @@ def index():
                                  data={"libraries": libraries,
                                        "version": __version__,
                                        "resource_files": resource_files
-                                   })
+                                       })
 
 
 @blueprint.route("/search/")
@@ -58,7 +61,7 @@ def search():
         pattern = pattern[5:].strip()
         mode = "name"
     else:
-        mode="both"
+        mode = "both"
 
     for word in pattern.split(" "):
         if word.lower().startswith("in:"):
@@ -74,7 +77,7 @@ def search():
         collection_name = kw[1].lower()
         if len(filters) == 0 or collection_name in filters:
             url = flask.url_for(".doc_for_library", collection_id=kw[0], keyword=kw[2])
-            row_id = "row-%s.%s" % (keyword[1].lower(), keyword[2].lower().replace(" ","-"))
+            row_id = "row-%s.%s" % (keyword[1].lower(), keyword[2].lower().replace(" ", "-"))
             keywords.append({"collection_id": keyword[0],
                              "collection_name": keyword[1],
                              "name": keyword[2],
@@ -82,14 +85,14 @@ def search():
                              "version": __version__,
                              "url": url,
                              "row_id": row_id
-                         })
+                             })
 
     keywords.sort(key=lambda kw: kw["name"])
     return flask.render_template("search.html",
                                  data={"keywords": keywords,
                                        "version": __version__,
                                        "pattern": pattern
-                                   })
+                                       })
 
 
 # Flask docs imply I can leave the slash off (which I want
@@ -124,7 +127,8 @@ def doc_for_library(collection_id, keyword=""):
                                        "libdoc": libdoc,
                                        "hierarchy": hierarchy,
                                        "collection_id": collection_id
-                                   })
+                                       })
+
 
 def get_collections(kwdb, libtype="*"):
     """Get list of collections from kwdb, then add urls necessary for hyperlinks"""
@@ -134,6 +138,7 @@ def get_collections(kwdb, libtype="*"):
         result["url"] = url
 
     return collections
+
 
 def get_navpanel_data(kwdb):
     """Get navpanel data from kwdb, and add urls necessary for hyperlinks"""

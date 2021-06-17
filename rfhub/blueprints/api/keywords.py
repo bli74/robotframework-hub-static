@@ -12,20 +12,21 @@ if "3" == robot_version.split('.')[0]:
 else:
     from robot.libdocpkg.htmlutils import DocToHtml
 
+
 class ApiEndpoint(object):
     def __init__(self, blueprint):
-        blueprint.add_url_rule("/keywords/", view_func = self.get_keywords)
-        blueprint.add_url_rule("/keywords/<collection_id>", view_func = self.get_library_keywords)
-        blueprint.add_url_rule("/keywords/<collection_id>/<keyword>", view_func = self.get_library_keyword)
+        blueprint.add_url_rule("/keywords/", view_func=self.get_keywords)
+        blueprint.add_url_rule("/keywords/<collection_id>", view_func=self.get_library_keywords)
+        blueprint.add_url_rule("/keywords/<collection_id>/<keyword>", view_func=self.get_library_keyword)
 
-    def get_library_keywords(self,collection_id):
+    def get_library_keywords(self, collection_id):
 
         query_pattern = flask.request.args.get('pattern', "*").strip().lower()
         keywords = current_app.kwdb.get_keywords(query_pattern)
 
-        req_fields  = flask.request.args.get('fields', "*").strip().lower()
+        req_fields = flask.request.args.get('fields', "*").strip().lower()
         if (req_fields == "*"):
-            fields = ("collection_id","library", "name","synopsis","doc","htmldoc","args",
+            fields = ("collection_id", "library", "name", "synopsis", "doc", "htmldoc", "args",
                       "doc_keyword_url", "api_keyword_url", "api_library_url")
         else:
             fields = [x.strip() for x in req_fields.split(",")]
@@ -61,7 +62,6 @@ class ApiEndpoint(object):
                         data["htmldoc"] = "";
                         htmldoc = "bummer", e
 
-
                 result.append(data)
 
         return flask.jsonify(keywords=result)
@@ -95,5 +95,3 @@ class ApiEndpoint(object):
             return flask.jsonify(keyword)
         else:
             flask.abort(404)
-
-

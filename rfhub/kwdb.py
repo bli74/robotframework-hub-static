@@ -6,19 +6,18 @@ are referred to as "collections".
 
 """
 
-import sqlite3
-import os
-from robot.libdocpkg import LibraryDocumentation
-import robot.libraries
-import logging
 import json
+import logging
+import os
 import re
-import sys
+import sqlite3
 from operator import itemgetter
 
+import robot.libraries
+from robot.libdocpkg import LibraryDocumentation
+from watchdog.events import PatternMatchingEventHandler
 from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
-from watchdog.events import PatternMatchingEventHandler
 
 """
 Note: It seems to be possible for watchdog to fire an event
@@ -33,8 +32,10 @@ elapsed? I haven't yet experienced this problem, but
 I haven't done extensive testing.
 """
 
+
 class WatchdogHandler(PatternMatchingEventHandler):
     patterns = ["*.robot", "*.txt", "*.py", "*.tsv", "*.resource"]
+
     def __init__(self, kwdb, path):
         PatternMatchingEventHandler.__init__(self)
         self.kwdb = kwdb
@@ -52,6 +53,7 @@ class WatchdogHandler(PatternMatchingEventHandler):
     def on_modified(self, event):
         self.kwdb.on_change(event.src_path, event.event_type)
 
+
 class KeywordTable(object):
     """A SQLite database of keywords"""
 
@@ -68,11 +70,11 @@ class KeywordTable(object):
         # set up watchdog observer to monitor changes to
         # keyword files (or more correctly, to directories
         # of keyword files)
-        self.observer =  PollingObserver() if poll else Observer()
+        self.observer = PollingObserver() if poll else Observer()
         self.observer.start()
 
     def set_top_level_path(self, name):
-        self.top_level_path=name
+        self.top_level_path = name
 
     def get_top_level_path(self):
         return self.top_level_path
@@ -87,8 +89,8 @@ class KeywordTable(object):
 
         elif os.path.isfile(name):
             if ((self._looks_like_resource_file(name)) or
-                (self._looks_like_libdoc_file(name)) or
-                (self._looks_like_library_file(name))):
+                    (self._looks_like_libdoc_file(name)) or
+                    (self._looks_like_library_file(name))):
                 self.add_file(name)
         else:
             # let's hope it's a library name!
@@ -127,7 +129,7 @@ class KeywordTable(object):
            One of path or libdoc needs to be passed in...
         """
         if libdoc is None and path is None:
-            raise(Exception("You must provide either a path or libdoc argument"))
+            raise (Exception("You must provide either a path or libdoc argument"))
 
         if libdoc is None:
             libdoc = LibraryDocumentation(path)
@@ -136,7 +138,7 @@ class KeywordTable(object):
             for keyword in libdoc.keywords:
                 self._add_keyword(collection_id, keyword.name, keyword.doc, keyword.args)
 
-    def removeprefix (self, text, prefix):
+    def removeprefix(self, text, prefix):
         if text.startswith(prefix):
             return text[len(prefix):]
         return text
@@ -166,8 +168,8 @@ class KeywordTable(object):
 
     def add_file(self, path):
         """Add a resource file or library file to the database"""
-        (path, src_name, libdoc)   = self.get_file(path)
-        self.add_combined_file (path, src_name, libdoc)
+        (path, src_name, libdoc) = self.get_file(path)
+        self.add_combined_file(path, src_name, libdoc)
 
     def add_library(self, name):
         """Add a library to the database
@@ -218,7 +220,7 @@ class KeywordTable(object):
         # that collects multiple other resource files and should
         # be used as include by coding standard.
         if _initial_combine is None:
-            combine_as_file=None
+            combine_as_file = None
             combine_file = os.path.join(dirname, ".rfhubcombine")
             if os.path.exists(combine_file):
                 try:
@@ -236,10 +238,13 @@ class KeywordTable(object):
                 if self.combined_libdoc is None:
                     if os.path.exists(combine_as_path):
                         try:
-                            (self.libdoc_path, self.libdoc_src_name, self.combined_libdoc) = self.get_file(combine_as_path)
+                            (self.libdoc_path, self.libdoc_src_name, self.combined_libdoc) = self.get_file(
+                                combine_as_path)
                             _exclude_patterns.append(combine_as_file)
                         except Exception as e:
-                            self.log.error (e.__class__.__name__ + ": Error to read top-level resource file " + combine_as_path + "\n" + str(e))
+                            self.log.error(
+                                e.__class__.__name__ + ": Error to read top-level resource file " + combine_as_path + "\n" + str(
+                                    e))
 
         # Get list of files and directories, remove matching exclude patterns
         dirlist = os.listdir(dirname)
@@ -266,10 +271,10 @@ class KeywordTable(object):
                                         self.combined_libdoc.keywords.extend(__libdoc.keywords)
             except Exception as e:
                 # I really need to get the logging situation figured out.
-                self.log.error (e.__class__.__name__ + ": Error to process " + path + "\n" + str(e))
+                self.log.error(e.__class__.__name__ + ": Error to process " + path + "\n" + str(e))
 
         if _initial_combine is None \
-            and self.combined_libdoc is not None:
+                and self.combined_libdoc is not None:
             # Write documentation for umbrella resource and reset instance variables
             self.add_combined_file(self.libdoc_path, self.libdoc_src_name, self.combined_libdoc)
             self.libdoc_path = None
@@ -320,7 +325,7 @@ class KeywordTable(object):
             if filename.endswith(".py") or filename.endswith(".pyc"):
                 libname, ext = os.path.splitext(filename)
                 if (libname.lower() not in loaded and
-                    not self._should_ignore(libname)):
+                        not self._should_ignore(libname)):
 
                     try:
                         self.add(libname)
@@ -336,8 +341,8 @@ class KeywordTable(object):
             fullpath = os.path.join(basedir, filename)
             filepath = os.path.join(fullpath, 'top_level.txt')
             if filename.startswith('robotframework_') \
-                and filename.endswith('.dist-info') \
-                and os.path.exists(filepath):
+                    and filename.endswith('.dist-info') \
+                    and os.path.exists(filepath):
                 try:
                     with open(filepath, "r") as f:
                         for line in f.readlines():
@@ -349,7 +354,7 @@ class KeywordTable(object):
                     pass
 
                 if (library.lower() not in loaded and
-                    not self._should_ignore(library)):
+                        not self._should_ignore(library)):
                     try:
                         self.add(library)
                         loaded.append(library.lower())
@@ -376,9 +381,9 @@ class KeywordTable(object):
             "type": sql_result[1],
             "name": sql_result[2],
             "path": sql_result[3],
-            "doc":  sql_result[4],
+            "doc": sql_result[4],
             "version": sql_result[5],
-            "scope":   sql_result[6],
+            "scope": sql_result[6],
             "namedargs": sql_result[7],
             "doc_format": sql_result[8]
         }
@@ -404,7 +409,7 @@ class KeywordTable(object):
                  "synopsis": result[2].split("\n")[0],
                  "type": result[3],
                  "path": result[4]
-             } for result in sql_result]
+                 } for result in sql_result]
 
     def get_keyword_data(self, collection_id):
         sql = """SELECT keyword.keyword_id, keyword.name, keyword.args, keyword.doc
@@ -422,7 +427,7 @@ class KeywordTable(object):
                  WHERE keyword.collection_id == ?
                  AND keyword.name like ?
               """
-        cursor = self._execute(sql, (collection_id,name))
+        cursor = self._execute(sql, (collection_id, name))
         # We're going to assume no library has duplicate keywords
         # While that in theory _could_ happen, it never _should_,
         # and you get what you deserve if it does.
@@ -432,7 +437,7 @@ class KeywordTable(object):
                     "args": json.loads(row[1]),
                     "doc": row[2],
                     "collection_id": collection_id
-            }
+                    }
         return {}
 
     def get_keyword_hierarchy(self, pattern="*"):
@@ -490,7 +495,7 @@ class KeywordTable(object):
         args = [pattern, pattern]
         if mode == "name":
             COND = "(keyword.name like ?)"
-            args = [pattern,]
+            args = [pattern, ]
 
         sql = """SELECT collection.collection_id, collection.name, keyword.name, keyword.doc
                  FROM collection_table as collection
@@ -565,20 +570,20 @@ class KeywordTable(object):
 
         found_keyword_table = False
         if (name.lower().endswith(".robot") or
-            name.lower().endswith(".txt") or
-            name.lower().endswith(".tsv") or
-            name.lower().endswith(".resource")):
+                name.lower().endswith(".txt") or
+                name.lower().endswith(".tsv") or
+                name.lower().endswith(".resource")):
 
             with open(name, "r") as f:
                 data = f.read()
                 for match in re.finditer(r'^\*+\s*(Test Cases?|(?:User )?Keywords?)',
-                                         data, re.MULTILINE|re.IGNORECASE):
+                                         data, re.MULTILINE | re.IGNORECASE):
                     if (re.match(r'Test Cases?', match.group(1), re.IGNORECASE)):
                         # if there's a test case table, it's not a keyword file
                         return False
 
                     if (not found_keyword_table and
-                        re.match(r'(User )?Keywords?', match.group(1), re.IGNORECASE)):
+                            re.match(r'(User )?Keywords?', match.group(1), re.IGNORECASE)):
                         found_keyword_table = True
         return found_keyword_table
 
@@ -672,7 +677,6 @@ class KeywordTable(object):
                 ON keyword_table (name)
             """)
 
-
     def _glob_to_sql(self, string):
         """Convert glob-like wildcards to SQL wildcards
 
@@ -693,11 +697,11 @@ class KeywordTable(object):
         # and chr(2) were picked because I know those characters
         # almost certainly won't be in the input string
         table = ((r'\\', chr(1)), (r'\*', chr(2)), (r'\?', chr(3)),
-                 (r'%', r'\%'),   (r'?', '_'),     (r'*', '%'),
+                 (r'%', r'\%'), (r'?', '_'), (r'*', '%'),
                  (chr(1), r'\\'), (chr(2), r'\*'), (chr(3), r'\?'))
 
         for (a, b) in table:
-            string = string.replace(a,b)
+            string = string.replace(a, b)
 
         string = string[1:] if string.startswith("^") else "%" + string
         string = string[:-1] if string.endswith("$") else string + "%"

@@ -6,6 +6,7 @@ This blueprint provides the /api interface.
 '''
 
 from flask import Blueprint
+
 from . import keywords
 from . import libraries
 
@@ -15,4 +16,3 @@ endpoints = [
     keywords.ApiEndpoint(blueprint),
     libraries.ApiEndpoint(blueprint)
 ]
-

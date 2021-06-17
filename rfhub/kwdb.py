@@ -79,12 +79,12 @@ class KeywordTable(object):
     def get_top_level_path(self):
         return self.top_level_path
 
-    def add(self, name, monitor=True):
+    def add(self, name):
         """Add a folder, library (.py) or resource file (.robot, .tsv, .txt, .resource) to the database
         """
 
         if os.path.isdir(name):
-            if (not os.path.basename(name).startswith(".")):
+            if not os.path.basename(name).startswith("."):
                 self.add_folder(name)
 
         elif os.path.isfile(name):
@@ -96,6 +96,7 @@ class KeywordTable(object):
             # let's hope it's a library name!
             self.add_library(name)
 
+    # noinspection PyUnusedLocal
     def on_change(self, path, event_type):
         """Respond to changes in the file system
 
@@ -120,6 +121,7 @@ class KeywordTable(object):
             sql = """DELETE from keyword_table
                      WHERE collection_id == ?
             """
+            # noinspection PyUnusedLocal
             cursor = self._execute(sql, (collection_id,))
             self._load_keywords(collection_id, path=path)
 
@@ -138,7 +140,8 @@ class KeywordTable(object):
             for keyword in libdoc.keywords:
                 self._add_keyword(collection_id, keyword.name, keyword.doc, keyword.args)
 
-    def removeprefix(self, text, prefix):
+    @staticmethod
+    def removeprefix(text, prefix):
         if text.startswith(prefix):
             return text[len(prefix):]
         return text
@@ -157,7 +160,7 @@ class KeywordTable(object):
         if len(libdoc.keywords) > 0:
             try:
                 _named_args = libdoc.named_args
-            except AttributeError as e:
+            except AttributeError:
                 # Attribute was dropped in Robot 4.x
                 _named_args = None
             collection_id = self.add_collection(path, src_name, libdoc.type,
@@ -181,7 +184,7 @@ class KeywordTable(object):
         if len(libdoc.keywords) > 0:
             try:
                 _named_args = libdoc.named_args
-            except AttributeError as e:
+            except AttributeError:
                 # Attribute was dropped in Robot 4.x
                 _named_args = None
 
@@ -210,7 +213,7 @@ class KeywordTable(object):
                 with open(_ignore_file, "r") as f:
                     for line in f.readlines():
                         line = line.strip()
-                        if (re.match(r'^\s*#', line)): continue
+                        if re.match(r'^\s*#', line): continue
                         if len(line) > 0:
                             _exclude_patterns.append(line)
             except:
@@ -227,7 +230,7 @@ class KeywordTable(object):
                     with open(combine_file, "r") as f:
                         for line in f.readlines():
                             line = line.strip()
-                            if (re.match(r'^\s*#', line)): continue
+                            if re.match(r'^\s*#', line): continue
                             if len(line.strip()) > 0:
                                 combine_as_file = line
                                 combine_as_path = os.path.join(dirname, combine_as_file)
@@ -255,12 +258,12 @@ class KeywordTable(object):
             (basename, ext) = os.path.splitext(filename.lower())
 
             try:
-                if (os.path.isdir(path)):
-                    if (not basename.startswith(".")):
+                if os.path.isdir(path):
+                    if not basename.startswith("."):
                         if os.access(path, os.R_OK):
                             self.add_folder(path, watch=False, exclude_patterns=_exclude_patterns)
                 else:
-                    if (ext in (".xml", ".robot", ".txt", ".py", ".tsv", ".resource")):
+                    if ext in (".xml", ".robot", ".txt", ".py", ".tsv", ".resource"):
                         if os.access(path, os.R_OK):
                             if self.combined_libdoc is None:
                                 self.add(path)
@@ -347,7 +350,7 @@ class KeywordTable(object):
                     with open(filepath, "r") as f:
                         for line in f.readlines():
                             line = line.strip()
-                            if (re.match(r'^\s*#', line)): continue
+                            if re.match(r'^\s*#', line): continue
                             if len(line) > 0:
                                 library = line
                 except:
@@ -387,7 +390,6 @@ class KeywordTable(object):
             "namedargs": sql_result[7],
             "doc_format": sql_result[8]
         }
-        return sql_result
 
     def get_collections(self, pattern="*", libtype="*"):
         """Returns a list of collection name/summary tuples"""
@@ -538,10 +540,12 @@ class KeywordTable(object):
         self._execute("DELETE FROM collection_table")
         self._execute("DELETE FROM keyword_table")
 
-    def _looks_like_library_file(self, name):
+    @staticmethod
+    def _looks_like_library_file(name):
         return name.endswith(".py")
 
-    def _looks_like_libdoc_file(self, name):
+    @staticmethod
+    def _looks_like_libdoc_file(name):
         """Return true if an xml file looks like a libdoc file"""
         # inefficient since we end up reading the file twice,
         # but it's fast enough for our purposes, and prevents
@@ -557,14 +561,15 @@ class KeywordTable(object):
                     return True
         return False
 
-    def _looks_like_resource_file(self, name):
+    @staticmethod
+    def _looks_like_resource_file(name):
         """Return true if the file has a keyword table but not a testcase table"""
         # inefficient since we end up reading the file twice,
         # but it's fast enough for our purposes, and prevents
         # us from doing a full parse of files that are obviously
         # not robot files
 
-        if (re.search(r'__init__.(txt|robot|html|tsv)$', name)):
+        if re.search(r'__init__.(txt|robot|html|tsv)$', name):
             # These are initialize files, not resource files
             return False
 
@@ -578,7 +583,7 @@ class KeywordTable(object):
                 data = f.read()
                 for match in re.finditer(r'^\*+\s*(Test Cases?|(?:User )?Keywords?)',
                                          data, re.MULTILINE | re.IGNORECASE):
-                    if (re.match(r'Test Cases?', match.group(1), re.IGNORECASE)):
+                    if re.match(r'Test Cases?', match.group(1), re.IGNORECASE):
                         # if there's a test case table, it's not a keyword file
                         return False
 
@@ -587,7 +592,8 @@ class KeywordTable(object):
                         found_keyword_table = True
         return found_keyword_table
 
-    def _should_ignore(self, name):
+    @staticmethod
+    def _should_ignore(name):
         """Return True if a given library name should be ignored
 
         This is necessary because not all files we find in the library
@@ -677,7 +683,8 @@ class KeywordTable(object):
                 ON keyword_table (name)
             """)
 
-    def _glob_to_sql(self, string):
+    @staticmethod
+    def _glob_to_sql(string):
         """Convert glob-like wildcards to SQL wildcards
 
         * becomes %

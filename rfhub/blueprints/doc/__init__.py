@@ -73,7 +73,6 @@ def search():
     keywords = []
     for keyword in current_app.kwdb.search(pattern, mode):
         kw = list(keyword)
-        collection_id = kw[0]
         collection_name = kw[1].lower()
         if len(filters) == 0 or collection_name in filters:
             url = flask.url_for(".doc_for_library", collection_id=kw[0], keyword=kw[2])

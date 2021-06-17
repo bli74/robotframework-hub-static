@@ -1,10 +1,11 @@
-'''
+"""
 This provides the view functions for the /api/keywords endpoints
-'''
+"""
 
 import flask
 from flask import current_app
-from robot import __version__ as robot_version
+from robot.version import get_version
+robot_version = get_version()
 
 # Handle difference between Robot 3.x and 4.x
 if "3" == robot_version.split('.')[0]:
@@ -19,13 +20,14 @@ class ApiEndpoint(object):
         blueprint.add_url_rule("/keywords/<collection_id>", view_func=self.get_library_keywords)
         blueprint.add_url_rule("/keywords/<collection_id>/<keyword>", view_func=self.get_library_keyword)
 
-    def get_library_keywords(self, collection_id):
+    @staticmethod
+    def get_library_keywords(collection_id):
 
         query_pattern = flask.request.args.get('pattern', "*").strip().lower()
         keywords = current_app.kwdb.get_keywords(query_pattern)
 
         req_fields = flask.request.args.get('fields', "*").strip().lower()
-        if (req_fields == "*"):
+        if req_fields == "*":
             fields = ("collection_id", "library", "name", "synopsis", "doc", "htmldoc", "args",
                       "doc_keyword_url", "api_keyword_url", "api_library_url")
         else:
@@ -36,31 +38,30 @@ class ApiEndpoint(object):
              keyword_name, keyword_doc, keyword_args) in keywords:
             if collection_id == "" or collection_id == keyword_collection_id:
                 data = {}
-                if ("collection_id" in fields): data["collection_id"] = keyword_collection_id
-                if ("library" in fields): data["library"] = keyword_collection_name
-                if ("name" in fields): data["name"] = keyword_name
-                if ("synopsis" in fields): data["synopsis"] = keyword_doc.strip().split("\n")[0]
-                if ("doc" in fields): data["doc"] = keyword_doc
-                if ("args" in fields): data["args"] = keyword_args
+                if "collection_id" in fields: data["collection_id"] = keyword_collection_id
+                if "library" in fields: data["library"] = keyword_collection_name
+                if "name" in fields: data["name"] = keyword_name
+                if "synopsis" in fields: data["synopsis"] = keyword_doc.strip().split("\n")[0]
+                if "doc" in fields: data["doc"] = keyword_doc
+                if "args" in fields: data["args"] = keyword_args
 
-                if ("doc_keyword_url" in fields):
+                if "doc_keyword_url" in fields:
                     data["doc_keyword_url"] = flask.url_for("doc.doc_for_library",
                                                             collection_id=keyword_collection_id,
                                                             keyword=keyword_name)
-                if ("api_keyword_url" in fields):
+                if "api_keyword_url" in fields:
                     data["api_keyword_url"] = flask.url_for(".get_library_keyword",
                                                             collection_id=keyword_collection_id,
                                                             keyword=keyword_name)
 
-                if ("api_library_url" in fields):
+                if "api_library_url" in fields:
                     data["api_library_url"] = flask.url_for(".get_library_keywords",
                                                             collection_id=keyword_collection_id)
-                if ("htmldoc" in fields):
+                if "htmldoc" in fields:
                     try:
                         data["htmldoc"] = DocToHtml("ROBOT")(keyword_doc)
-                    except Exception as e:
-                        data["htmldoc"] = "";
-                        htmldoc = "bummer", e
+                    except Exception:
+                        data["htmldoc"] = ""
 
                 result.append(data)
 
@@ -71,7 +72,8 @@ class ApiEndpoint(object):
         collection_id = flask.request.args.get('collection_id', "")
         return self.get_library_keywords(collection_id)
 
-    def get_library_keyword(self, collection_id, keyword):
+    @staticmethod
+    def get_library_keyword(collection_id, keyword):
         kwdb = current_app.kwdb
 
         # if collection_id is a name, redirect?

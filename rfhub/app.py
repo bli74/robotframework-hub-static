@@ -31,6 +31,7 @@ class RobotHub(object):
 
         self.kwdb = KeywordTable(poll=self.args.poll)
         self.app = flask.Flask(__name__)
+        self.shutdown_requested = False
 
         with self.app.app_context():
             current_app.kwdb = self.kwdb
@@ -56,7 +57,6 @@ class RobotHub(object):
         else:
             root = "http://%s:%s" % (self.args.interface, self.args.port)
             print("tornado web server running on " + root)
-            self.shutdown_requested = False
             http_server = HTTPServer(WSGIContainer(self.app))
             http_server.listen(port=self.args.port, address=self.args.interface)
 
@@ -64,6 +64,7 @@ class RobotHub(object):
             tornado.ioloop.PeriodicCallback(self.check_shutdown_flag, 500).start()
             tornado.ioloop.IOLoop.instance().start()
 
+    # noinspection PyUnusedLocal
     def signal_handler(self, *args):
         """Handle SIGINT by setting a flag to request shutdown"""
         self.shutdown_requested = True
@@ -74,7 +75,8 @@ class RobotHub(object):
             tornado.ioloop.IOLoop.instance().stop()
             print("web server stopped.")
 
-    def _parse_args(self):
+    @staticmethod
+    def _parse_args():
         parser = argparse.ArgumentParser()
         parser.add_argument("-l", "--library", action="append", default=[],
                             help="load the given LIBRARY (eg: -l DatabaseLibrary)")
@@ -105,14 +107,14 @@ class RobotHub(object):
         return parser.parse_args()
 
     def _favicon(self):
-        static_dir = os.path.join(self.app.root_path, 'static')
         return flask.send_from_directory(os.path.join(self.app.root_path, 'static'),
                                          'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
     def _root(self):
         return flask.redirect(self.args.root)
 
-    def _ping(self):
+    @staticmethod
+    def _ping():
         """This function is called via the /ping url"""
         return "pong"
 
@@ -132,7 +134,7 @@ class RobotHub(object):
 
 
 class ArgfileAction(argparse.Action):
-    '''Called when the argument parser encounters --argumentfile'''
+    """Called when the argument parser encounters --argumentfile"""
 
     def __call__(self, parser, namespace, values, option_string=None):
         path = os.path.abspath(os.path.expanduser(values))
@@ -152,7 +154,7 @@ class PythonPathAction(argparse.Action):
 
 
 class ModuleAction(argparse.Action):
-    '''Handle the -M / --module option
+    """Handle the -M / --module option
 
     This finds all class objects in the given module.  Since page
     objects are modules of , they will be appended to the "library"
@@ -171,7 +173,7 @@ class ModuleAction(argparse.Action):
     that are exported from that module. For each class it finds it will
     append "pages.MyApp.<class name>" (eg: pages.MyApp.ExamplePage) to
     the list of libraries that will eventually be processed.
-    '''
+    """
 
     def __call__(self, parser, namespace, arg, option_string=None):
         try:

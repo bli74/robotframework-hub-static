@@ -1,9 +1,9 @@
-'''
+"""
 API blueprint
 
 This blueprint provides the /api interface.
 
-'''
+"""
 
 from flask import Blueprint
 

@@ -478,7 +478,7 @@ if (typeof jQuery === 'undefined') { throw new Error('Bootstrap\'s JavaScript re
     this.options       = $.extend({}, Collapse.DEFAULTS, options)
     this.transitioning = null
 
-    if (this.options.parent) this.$parent = $(this.options.parent)
+    if (this.options.parent) this.$parent = $(this.find(options.parent))
     if (this.options.toggle) this.toggle()
   }
 
@@ -1173,7 +1173,7 @@ if (typeof jQuery === 'undefined') { throw new Error('Bootstrap\'s JavaScript re
         .css({ top: 0, left: 0, display: 'block' })
         .addClass(placement)
 
-      this.options.container ? $tip.appendTo(this.options.container) : $tip.insertAfter(this.$element)
+      this.options.container ? $tip.appendTo(this.find(options.container)) : $tip.insertAfter(this.$element)
 
       var pos          = this.getPosition()
       var actualWidth  = $tip[0].offsetWidth
@@ -1624,7 +1624,7 @@ if (typeof jQuery === 'undefined') { throw new Error('Bootstrap\'s JavaScript re
   ScrollSpy.prototype.activate = function (target) {
     this.activeTarget = target
 
-    $(this.selector)
+    $.find(this.selector)
       .parentsUntil(this.options.target, '.active')
       .removeClass('active')
 

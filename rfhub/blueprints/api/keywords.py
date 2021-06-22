@@ -5,6 +5,7 @@ This provides the view functions for the /api/keywords endpoints
 import flask
 from flask import current_app
 from robot.version import get_version
+
 robot_version = get_version()
 
 # Handle difference between Robot 3.x and 4.x

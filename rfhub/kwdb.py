@@ -188,8 +188,7 @@ class KeywordTable(object):
                 # Attribute was dropped in Robot 4.x
                 _named_args = None
 
-            # FIXME: figure out the path to the library file
-            collection_id = self.add_collection(None, libdoc.name, libdoc.type,
+            collection_id = self.add_collection(libdoc.source, libdoc.name, libdoc.type,
                                                 libdoc.doc, libdoc.version,
                                                 libdoc.scope, _named_args,
                                                 libdoc.doc_format)
@@ -286,7 +285,7 @@ class KeywordTable(object):
 
         # FIXME:
         # instead of passing a flag around, I should just keep track
-        # of which folders we're watching, and don't add wathers for
+        # of which folders we're watching, and don't add watchers for
         # any subfolders. That will work better in the case where
         # the user accidentally starts up the hub giving the same
         # folder, or a folder and it's children, on the command line...

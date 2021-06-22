@@ -3,9 +3,9 @@
 import json
 
 import flask
-from flask import current_app
 
-from rfhub.version import __version__
+from rfhub import DocToHtml, version
+from rfhub import app
 
 blueprint = flask.Blueprint('doc', __name__,
                             template_folder="templates",
@@ -16,7 +16,7 @@ blueprint = flask.Blueprint('doc', __name__,
 @blueprint.route("/keywords/")
 def doc():
     """Show a list of libraries, along with the nav panel on the left"""
-    kwdb = current_app.kwdb
+    kwdb = app.hub.kwdb
 
     libraries = get_collections(kwdb, libtype="library")
     resource_files = get_collections(kwdb, libtype="resource")
@@ -24,7 +24,7 @@ def doc():
 
     return flask.render_template("home.html",
                                  data={"libraries": libraries,
-                                       "version": __version__,
+                                       "version": version,
                                        "libdoc": None,
                                        "hierarchy": hierarchy,
                                        "resource_files": resource_files
@@ -34,14 +34,14 @@ def doc():
 @blueprint.route("/index")
 def index():
     """Show a list of available libraries, and resource files"""
-    kwdb = current_app.kwdb
+    kwdb = app.hub.kwdb
 
     libraries = get_collections(kwdb, libtype="library")
     resource_files = get_collections(kwdb, libtype="resource")
 
     return flask.render_template("libraryNames.html",
                                  data={"libraries": libraries,
-                                       "version": __version__,
+                                       "version": version,
                                        "resource_files": resource_files
                                        })
 
@@ -54,7 +54,7 @@ def search():
     # if the pattern contains "in:<collection>" (eg: in:builtin),
     # filter results to only that (or those) collections
     # This was kind-of hacked together, but seems to work well enough
-    collections = [c["name"].lower() for c in current_app.kwdb.get_collections()]
+    collections = [c["name"].lower() for c in app.hub.kwdb.get_collections()]
     words = []
     filters = []
     if pattern.startswith("name:"):
@@ -71,7 +71,7 @@ def search():
     pattern = " ".join(words)
 
     keywords = []
-    for keyword in current_app.kwdb.search(pattern, mode):
+    for keyword in app.hub.kwdb.search(pattern, mode):
         kw = list(keyword)
         collection_name = kw[1].lower()
         if len(filters) == 0 or collection_name in filters:
@@ -81,15 +81,15 @@ def search():
                              "collection_name": keyword[1],
                              "name": keyword[2],
                              "synopsis": keyword[3],
-                             "version": __version__,
+                             "version": version,
                              "url": url,
                              "row_id": row_id
                              })
 
-    keywords.sort(key=lambda kw: kw["name"])
+    keywords.sort(key=lambda _kw: _kw["name"])
     return flask.render_template("search.html",
                                  data={"keywords": keywords,
-                                       "version": __version__,
+                                       "version": version,
                                        "pattern": pattern
                                        })
 
@@ -102,16 +102,16 @@ def search():
 @blueprint.route("/keywords/<collection_id>/<keyword>/")
 @blueprint.route("/keywords/<collection_id>/")
 def doc_for_library(collection_id, keyword=""):
-    kwdb = current_app.kwdb
+    kwdb = app.hub.kwdb
 
     keywords = []
-    for (keyword_id, name, args, doc) in kwdb.get_keyword_data(collection_id):
+    for (keyword_id, name, args, p_doc) in kwdb.get_keyword_data(collection_id):
         # args is a json list; convert it to actual list, and
         # then convert that to a string
         args = ", ".join(json.loads(args))
-        doc = doc_to_html(doc)
+        p_doc = doc_to_html(p_doc)
         target = name == keyword
-        keywords.append((name, args, doc, target))
+        keywords.append((name, args, p_doc, target))
 
     # this is the introduction documentation for the library
     libdoc = kwdb.get_collection(collection_id)
@@ -122,7 +122,7 @@ def doc_for_library(collection_id, keyword=""):
 
     return flask.render_template("library.html",
                                  data={"keywords": keywords,
-                                       "version": __version__,
+                                       "version": version,
                                        "libdoc": libdoc,
                                        "hierarchy": hierarchy,
                                        "collection_id": collection_id
@@ -153,7 +153,6 @@ def get_navpanel_data(kwdb):
     return data
 
 
-def doc_to_html(doc, doc_format="ROBOT"):
+def doc_to_html(p_doc, doc_format="ROBOT"):
     """Convert documentation to HTML"""
-    from robot.libdocpkg.htmlwriter import DocToHtml
-    return DocToHtml(doc_format)(doc)
+    return DocToHtml(doc_format)(p_doc)

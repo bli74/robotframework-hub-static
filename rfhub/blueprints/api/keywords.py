@@ -4,15 +4,9 @@ This provides the view functions for the /api/keywords endpoints
 
 import flask
 from flask import current_app
-from robot.version import get_version
 
-robot_version = get_version()
-
-# Handle difference between Robot 3.x and 4.x
-if "3" == robot_version.split('.')[0]:
-    from robot.libdocpkg.htmlwriter import DocToHtml
-else:
-    from robot.libdocpkg.htmlutils import DocToHtml
+from rfhub import DocToHtml
+from rfhub import app
 
 
 class ApiEndpoint(object):
@@ -25,7 +19,7 @@ class ApiEndpoint(object):
     def get_library_keywords(collection_id):
 
         query_pattern = flask.request.args.get('pattern', "*").strip().lower()
-        keywords = current_app.kwdb.get_keywords(query_pattern)
+        keywords = app.hub.kwdb.get_keywords(query_pattern)
 
         req_fields = flask.request.args.get('fields', "*").strip().lower()
         if req_fields == "*":
@@ -39,12 +33,18 @@ class ApiEndpoint(object):
              keyword_name, keyword_doc, keyword_args) in keywords:
             if collection_id == "" or collection_id == keyword_collection_id:
                 data = {}
-                if "collection_id" in fields: data["collection_id"] = keyword_collection_id
-                if "library" in fields: data["library"] = keyword_collection_name
-                if "name" in fields: data["name"] = keyword_name
-                if "synopsis" in fields: data["synopsis"] = keyword_doc.strip().split("\n")[0]
-                if "doc" in fields: data["doc"] = keyword_doc
-                if "args" in fields: data["args"] = keyword_args
+                if "collection_id" in fields:
+                    data["collection_id"] = keyword_collection_id
+                if "library" in fields:
+                    data["library"] = keyword_collection_name
+                if "name" in fields:
+                    data["name"] = keyword_name
+                if "synopsis" in fields:
+                    data["synopsis"] = keyword_doc.strip().split("\n")[0]
+                if "doc" in fields:
+                    data["doc"] = keyword_doc
+                if "args" in fields:
+                    data["args"] = keyword_args
 
                 if "doc_keyword_url" in fields:
                     data["doc_keyword_url"] = flask.url_for("doc.doc_for_library",
@@ -59,6 +59,7 @@ class ApiEndpoint(object):
                     data["api_library_url"] = flask.url_for(".get_library_keywords",
                                                             collection_id=keyword_collection_id)
                 if "htmldoc" in fields:
+                    # noinspection PyBroadException
                     try:
                         data["htmldoc"] = DocToHtml("ROBOT")(keyword_doc)
                     except Exception:
@@ -75,7 +76,7 @@ class ApiEndpoint(object):
 
     @staticmethod
     def get_library_keyword(collection_id, keyword):
-        kwdb = current_app.kwdb
+        kwdb = app.hub.kwdb
 
         # if collection_id is a name, redirect?
         collections = kwdb.get_collections(pattern=collection_id.strip().lower())

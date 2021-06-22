@@ -17,6 +17,8 @@ from rfhub import blueprints
 from rfhub.kwdb import KeywordTable
 from rfhub.version import __version__
 
+hub = None
+
 
 class RobotHub(object):
     """Robot hub - website for REST and HTTP access to robot files"""

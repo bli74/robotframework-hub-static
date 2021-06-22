@@ -208,11 +208,13 @@ class KeywordTable(object):
         _initial_combine = self.combined_libdoc
         _ignore_file = os.path.join(dirname, ".rfhubignore")
         if os.path.exists(_ignore_file):
+            # noinspection PyBroadException
             try:
                 with open(_ignore_file, "r") as f:
                     for line in f.readlines():
                         line = line.strip()
-                        if re.match(r'^\s*#', line): continue
+                        if re.match(r'^\s*#', line):
+                            continue
                         if len(line) > 0:
                             _exclude_patterns.append(line)
             except:
@@ -225,11 +227,13 @@ class KeywordTable(object):
             combine_as_file = None
             combine_file = os.path.join(dirname, ".rfhubcombine")
             if os.path.exists(combine_file):
+                # noinspection PyBroadException
                 try:
                     with open(combine_file, "r") as f:
                         for line in f.readlines():
                             line = line.strip()
-                            if re.match(r'^\s*#', line): continue
+                            if re.match(r'^\s*#', line):
+                                continue
                             if len(line.strip()) > 0:
                                 combine_as_file = line
                                 combine_as_path = os.path.join(dirname, combine_as_file)
@@ -245,8 +249,8 @@ class KeywordTable(object):
                             _exclude_patterns.append(combine_as_file)
                         except Exception as e:
                             self.log.error(
-                                e.__class__.__name__ + ": Error to read top-level resource file " + combine_as_path + "\n" + str(
-                                    e))
+                                e.__class__.__name__ + ": Error to read top-level resource file " +
+                                combine_as_path + "\n" + str(e))
 
         # Get list of files and directories, remove matching exclude patterns
         dirlist = os.listdir(dirname)
@@ -345,11 +349,13 @@ class KeywordTable(object):
             if filename.startswith('robotframework_') \
                     and filename.endswith('.dist-info') \
                     and os.path.exists(filepath):
+                # noinspection PyBroadException
                 try:
                     with open(filepath, "r") as f:
                         for line in f.readlines():
                             line = line.strip()
-                            if re.match(r'^\s*#', line): continue
+                            if re.match(r'^\s*#', line):
+                                continue
                             if len(line) > 0:
                                 library = line
                 except:
@@ -361,7 +367,7 @@ class KeywordTable(object):
                         self.add(library)
                         loaded.append(library.lower())
                     except Exception as e:
-                        self.log.debug("unable to add external library %s: %s" % \
+                        self.log.debug("unable to add external library %s: %s" %
                                        (library, str(e)))
 
     def get_collection(self, collection_id):
@@ -492,10 +498,10 @@ class KeywordTable(object):
         """
         pattern = self._glob_to_sql(pattern)
 
-        COND = "(keyword.name like ? OR keyword.doc like ?)"
+        cond = "(keyword.name like ? OR keyword.doc like ?)"
         args = [pattern, pattern]
         if mode == "name":
-            COND = "(keyword.name like ?)"
+            cond = "(keyword.name like ?)"
             args = [pattern, ]
 
         sql = """SELECT collection.collection_id, collection.name, keyword.name, keyword.doc
@@ -504,7 +510,7 @@ class KeywordTable(object):
                  WHERE collection.collection_id == keyword.collection_id
                  AND %s
                  ORDER by collection.collection_id, collection.name, keyword.name
-             """ % COND
+             """ % cond
 
         cursor = self._execute(sql, args)
         result = [(row[0], row[1], row[2], row[3].strip().split("\n")[0])

@@ -58,3 +58,10 @@ selenium-screenshot-*.png
 
 # mac crud
 .DS_Store
+
+# IDE and tools
+.idea/
+.mypy_cache/
+.vscode/
+htmlcov/
+.project

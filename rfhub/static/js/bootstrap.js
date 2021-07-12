@@ -1284,7 +1284,7 @@ if (typeof jQuery === 'undefined') { throw new Error('Bootstrap\'s JavaScript re
     var $tip  = this.tip()
     var title = this.getTitle()
 
-    $tip.find('.tooltip-inner')[this.options.html ? 'html' : 'text'](title)
+    $.find(tip.find('.tooltip-inner')[this.options.html ? 'html' : 'text'](title))
     $tip.removeClass('fade in top bottom left right')
   }
 

@@ -5,13 +5,31 @@ in rfhub/version.py and then run the following commands:
     $ python setup.py sdist
     $ python3 -m twine upload dist/*
 
-
 """
 from setuptools import setup
 
-filename = 'rfhub/version.py'
-__version__ = "0.0.0"
+__version__: str = "0.0.0"
+filename: str = 'rfhub/version.py'
 exec(open(filename).read())
+
+setup_requires_packages: list = ['wheel']
+install_requires_packages: list = [
+    'Flask>=1.1.1',
+    'Jinja2>=2.11.3',
+    'MarkupSafe>=0.23',
+    'PyYAML>=5.4',
+    'Werkzeug>=0.15.3',
+    'argh>=0.25.0',
+    'itsdangerous>=0.24',
+    'tornado>=6.0.3',
+    'pathtools3>=0.2.1',
+    'requests>=2.20.0',
+    'robotframework>=2.8.5',
+    'robotframework-requests>=0.5.0',
+    'robotframework-seleniumlibrary>=4.0.0',
+    'watchdog>=0.9.0'
+]
+test_requires_packages: list = ['coverage']
 
 setup(
     name='robotframework-hub-bli',
@@ -28,7 +46,12 @@ setup(
     long_description_content_type="text/markdown",
     zip_safe=True,
     include_package_data=True,
-    install_requires=['Flask', 'watchdog', 'robotframework', 'tornado'],
+    python_requires=">=3.6",
+    setup_requires=setup_requires_packages,
+    install_requires=install_requires_packages,
+    extras_require={
+        'test': test_requires_packages
+    },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",

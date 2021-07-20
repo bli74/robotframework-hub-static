@@ -9,7 +9,7 @@ It's crazy easy to get started. To install and run from a PyPi
 package, do the following:
 
 ```
-    $ pip install robotframework-hub
+    $ pip install robotframework-hub-bli
     $ python -m rfhub
 ```
 

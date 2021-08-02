@@ -32,29 +32,29 @@ line:
 
 ## Websites
 
-Source code, screenshots, and additional documentation can be 
+Source code, screenshots, and additional documentation can be
 found here:
 
- * Source code: https://github.com/bli74/robotframework-hub
+* Source code: https://github.com/bli74/robotframework-hub
 
 This is a fork of the initial project:
 
- * Source code (upstream): https://github.com/boakley/robotframework-hub
- * Project wiki: https://github.com/boakley/robotframework-hub/wiki
+* Source code (upstream): https://github.com/boakley/robotframework-hub
+* Project wiki: https://github.com/boakley/robotframework-hub/wiki
 
 The last changes in this project were added in 2019 and since then
 pull requests are still open.
 
 This fork includes compatibility fixes and additional functionality:
 
- * Updated requirement versions.
- * Completed '.rfhubignore' logic.
- * Compatibility fixes for Robot Framework 3.2.x and 4.x
- * Support of umbrella libraries.
-   That means libraries that include all libraries from the subdirectrory
-   and provide an aggregated set of keywords.
-   To write tests only this aggregated library should be included and
-   the documentation should list the keywords for this aggregated library only.
+* Updated requirement versions.
+* Completed '.rfhubignore' logic.
+* Compatibility fixes for Robot Framework 3.2.x and 4.x
+* Support of umbrella libraries.
+  That means libraries that include all libraries from the subdirectrory
+  and provide an aggregated set of keywords.
+  To write tests only this aggregated library should be included and
+  the documentation should list the keywords for this aggregated library only.
 
 ## Acknowledgements
 

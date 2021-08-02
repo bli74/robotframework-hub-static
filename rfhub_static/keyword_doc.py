@@ -159,7 +159,7 @@ def do_it(in_path: str, out_path: str):
 
 def kw_doc_gen():
     if sys.version_info < (3, 6):
-        print(sys.argv[0] + " requires python 3.6 or above".format(__version__))
+        print(sys.argv[0] + " requires python 3.6 or above")
         sys.exit(1)
     if len(sys.argv) != 3:
         print ("Usage: " + sys.argv[0] + ' <base directory> <documentation directory>')

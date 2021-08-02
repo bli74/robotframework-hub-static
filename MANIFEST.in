@@ -1,7 +1,6 @@
 include README.md
-recursive-include rfhub/static *
-recursive-include rfhub/static/css *.css
-recursive-include rfhub/static/fonts *
-recursive-include rfhub/static/templates *.html
-recursive-include rfhub/static *
-recursive-exclude rfhub *~ #*#
+recursive-include rfhub_static/static *
+recursive-include rfhub_static/static/css *.css
+recursive-include rfhub_static/static/fonts *
+recursive-include rfhub_static/static/templates *.html
+recursive-exclude rfhub_static *~ #*#

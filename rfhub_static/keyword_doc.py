@@ -6,28 +6,28 @@ import sys
 
 from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
-from jinja2 import Environment, PackageLoader, select_autoescape, debug
+from jinja2 import Environment, PackageLoader, select_autoescape, debug, FileSystemLoader
 from robot.libdoc import LibDoc
 from robot.libraries import STDLIBS
 from typing import List, Dict
 from urllib.parse import quote
 from rfhub_static.version import __version__ as pkg_version
 
-LibDocInst = LibDoc()
+libdoc_instance = LibDoc()
 
 def generate_doc_file(lib_file_or_resource: str, out_dir: str, out_file: str, lib_name: str) -> Dict:
     result_dict = {}
     out = StringIO()
     err = StringIO()
     with redirect_stdout(out), redirect_stderr(err):
-        rc = LibDocInst.execute_cli([lib_file_or_resource, 'list'], exit=False)
+        rc = libdoc_instance.execute_cli([lib_file_or_resource, 'list'], exit=False)
     output_text = out.getvalue().strip()
     output_lines = output_text.split('\n') if output_text != '' else []
     if rc == 0 and len(output_lines) > 0:
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
         with redirect_stdout(out), redirect_stderr(err):
-            result = LibDocInst.execute(lib_file_or_resource, out_file, docformat='ROBOT', name=lib_name)
+            result = libdoc_instance.execute(lib_file_or_resource, out_file, docformat='ROBOT', name=lib_name)
         if result != 0 and os.path.exists(out_file):
             os.remove(out_file)
         if os.path.exists(out_file):
@@ -110,8 +110,8 @@ def generate_doc_libraries(out_path: str) -> None:
     return result_dict
 
 
-def create_index_page(out_path: str, library_list: List, resource_list: List) -> None:
-    env = Environment(loader=PackageLoader('rfhub_static'), autoescape=select_autoescape())
+def create_index_page(out_path: str, template_directory: str, library_list: List, resource_list: List) -> None:
+    env = Environment(loader=FileSystemLoader(template_directory), autoescape=select_autoescape())
     template = env.get_template("twocolumn.html")
     result = template.render(data={"version": pkg_version,
                                    "libraries": library_list,
@@ -138,10 +138,11 @@ def do_it(in_path: str, out_path: str):
     if os.path.exists(out_path):
         shutil.rmtree(out_path, ignore_errors=False)
     os.makedirs(out_path, exist_ok=True)
-    web_static_src = os.path.dirname(os.path.realpath(__file__))
-    web_static_src = os.path.join(web_static_src, 'static')
-    web_static_dst = os.path.join(out_path, 'static')
-    shutil.copytree(web_static_src, web_static_dst)
+    package_base_directory = os.path.dirname(os.path.realpath(__file__))
+    template_directory = os.path.join(package_base_directory, 'templates')
+    static_src = os.path.join(package_base_directory, 'static')
+    static_dst = os.path.join(out_path, 'static')
+    shutil.copytree(static_src, static_dst)
 
     builtin_dict = generate_doc_builtin(out_path)
     library_dict = generate_doc_libraries(out_path)
@@ -155,7 +156,7 @@ def do_it(in_path: str, out_path: str):
     all_resources_sorted  = []
     for key in sorted(resource_dict):
         all_resources_sorted.append(resource_dict[key])
-    create_index_page(out_path, all_libraries_sorted, all_resources_sorted)
+    create_index_page(out_path, template_directory, all_libraries_sorted, all_resources_sorted)
 
 def kw_doc_gen():
     if sys.version_info < (3, 6):

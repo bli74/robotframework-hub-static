@@ -2,10 +2,9 @@
 # this file.
 --pythonpath .
 --variable BROWSER:headlesschrome
---variable KEYWORD_DIR:tests/keywords
---variable HOST:localhost
---variable PORT:7071
+--variable KEYWORD_DIR:tests/sample_resources
 
 --outputdir tests/results
 
 --exclude in-progress
+--exclude test-data

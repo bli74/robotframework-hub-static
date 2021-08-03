@@ -55,6 +55,7 @@ log.html
 report.html
 output.xml
 selenium-screenshot-*.png
+tests/_docu/
 
 # mac crud
 .DS_Store

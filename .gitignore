@@ -63,5 +63,4 @@ selenium-screenshot-*.png
 .idea/
 .mypy_cache/
 .vscode/
-htmlcov/
 .project

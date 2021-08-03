@@ -1,19 +1,21 @@
 import os
 import re
-import robot
 import shutil
 import sys
-
 from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
-from jinja2 import Environment, PackageLoader, select_autoescape, debug, FileSystemLoader
-from robot.libdoc import LibDoc
-from robot.libraries import STDLIBS
 from typing import List, Dict
 from urllib.parse import quote
+
+import robot
+from jinja2 import Environment, select_autoescape, FileSystemLoader
+from robot.libdoc import LibDoc
+from robot.libraries import STDLIBS
+
 from rfhub_static.version import __version__ as pkg_version
 
 libdoc_instance = LibDoc()
+
 
 def generate_doc_file(lib_file_or_resource: str, out_dir: str, out_file: str, lib_name: str) -> Dict:
     result_dict = {}
@@ -38,7 +40,7 @@ def generate_doc_file(lib_file_or_resource: str, out_dir: str, out_file: str, li
                 _line_url = quote(_line)
                 keywords_list.append({
                     "name": _line,
-                    "url":  base_url + '#' + _line_url
+                    "url": base_url + '#' + _line_url
                 })
             result_dict[lib_name] = {
                 "name": lib_name,
@@ -82,15 +84,16 @@ def get_robot_modules() -> List[str]:
     # Get parent directory of 'robot'
     library_base_dir = os.path.dirname(robot.__file__)
     library_base_dir = os.path.dirname(library_base_dir)
-    for dir_entry in os.scandir(library_base_dir):
-        if not os.path.isdir(dir_entry.path):
+    for dir_entry in os.listdir(library_base_dir):
+        dir_entry_path = os.path.join(library_base_dir, dir_entry)
+        if not os.path.isdir(dir_entry_path):
             continue
-        if not re.match('.*[.]dist-info$', dir_entry.name):
+        if not re.match('.*[.]dist-info$', dir_entry):
             continue
-        if not re.match('^robotframework_*', dir_entry.name) and \
-                not re.match('^bssf_btap_bss_robot_lib.*', dir_entry.name):
+        if not re.match('^robotframework_*', dir_entry) and \
+                not re.match('^bssf_btap_bss_robot_lib.*', dir_entry):
             continue
-        top_level_file = os.path.join(dir_entry.path, 'top_level.txt')
+        top_level_file = os.path.join(dir_entry_path, 'top_level.txt')
         if os.path.exists(top_level_file):
             with open(top_level_file) as f:
                 file_data = f.read()
@@ -101,7 +104,8 @@ def get_robot_modules() -> List[str]:
                         result.append(_line)
     return result
 
-def generate_doc_libraries(out_path: str) -> None:
+
+def generate_doc_libraries(out_path: str) -> Dict:
     result_dict = {}
     directory_list = get_robot_modules()
     for directory in sorted(directory_list):
@@ -116,18 +120,18 @@ def create_index_page(out_path: str, template_directory: str, library_list: List
     result = template.render(data={"version": pkg_version,
                                    "libraries": library_list,
                                    "resource_files": resource_list
-                                  })
+                                   })
     with open(os.path.join(out_path, 'index.html'), 'w') as f:
         f.write(result)
     print('Done')
 
-def do_it(in_path: str, out_path: str):
 
+def do_it(in_path: str, out_path: str):
     if not os.path.exists(in_path):
-        print ("ERROR: Specified base path " + in_path + ' does not exist.')
+        print("ERROR: Specified base path " + in_path + ' does not exist.')
         sys.exit(2)
     if not os.path.isdir(in_path):
-        print ("ERROR: Specified base path " + in_path + ' is no directory.')
+        print("ERROR: Specified base path " + in_path + ' is no directory.')
         sys.exit(2)
 
     # Cleanup and rebuild output path
@@ -153,21 +157,23 @@ def do_it(in_path: str, out_path: str):
     all_libraries_sorted = []
     for key in sorted(all_libraries):
         all_libraries_sorted.append(all_libraries[key])
-    all_resources_sorted  = []
+    all_resources_sorted = []
     for key in sorted(resource_dict):
         all_resources_sorted.append(resource_dict[key])
     create_index_page(out_path, template_directory, all_libraries_sorted, all_resources_sorted)
+
 
 def kw_doc_gen():
     if sys.version_info < (3, 6):
         print(sys.argv[0] + " requires python 3.6 or above")
         sys.exit(1)
     if len(sys.argv) != 3:
-        print ("Usage: " + sys.argv[0] + ' <base directory> <documentation directory>')
+        print("Usage: " + sys.argv[0] + ' <base directory> <documentation directory>')
         sys.exit(2)
     in_path = sys.argv[1]  # "/home/ebertli/gitViews/bscs/eb_robot/lhsj_main/bscs/tests/robotScripts/src/main"
     out_path = sys.argv[2]  # "/home/ebertli/gitViews/bscs/eb_robot/lhsj_main/bscs/tests/robotScripts/src/main/docu"
     do_it(in_path, out_path)
+
 
 if __name__ == '__main__':
     kw_doc_gen()

@@ -6,7 +6,7 @@ in rfhub_static/version.py and then run the following commands:
     $ python3 -m twine upload dist/*
 
 """
-from setuptools import setup, find_packages
+from setuptools import setup
 
 __version__: str = "0.0.0"
 filename: str = 'rfhub_static/version.py'

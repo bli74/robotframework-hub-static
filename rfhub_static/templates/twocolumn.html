@@ -35,11 +35,11 @@
                      title="file path: {{collection.path}}">{{collection.name}}</label>
               <ul class="list-group  tree collapse">
                   <li class="overview">
-                      <a href='{{collection.url}}'><i>Overview</i></a>
+                      <a onclick="load_libdoc(&quot;{{collection.url}}&quot;)"><i>Overview</i></a>
                   </li>
                   {% for kw in collection.keywords %}
                     <li class="keyword">
-                        <a href='{{kw.url}}'>{{kw.name}}</a>
+                        <a onclick="load_libdoc(&quot;{{kw.url}}&quot;)">{{kw.name}}</a>
                     </li>
                   {% endfor %}
               </ul>

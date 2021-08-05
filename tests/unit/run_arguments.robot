@@ -19,11 +19,22 @@
 | | Should Not Be Equal As Integers | 0 | ${rc}
 | | Should Start With | ${output} | Usage:
 
-| Run with correct arguments
+| Run with base and documentation directory
 | | [Documentation]
 | | ... | keyword_doc creates index.html and library documentation
 | | ${rc} | ${output} | Run And Return Rc And Output | keyword_doc tests/sample_resources ${docu_dir}
 | | Should Be Equal As Integers | 0 | ${rc}
 | | File Should Exist | ${docu_dir}${/}index.html
 | | File Should Exist | ${docu_dir}${/}BuiltIn.html
+| | File Should Exist | ${docu_dir}${/}eb_keyword${/}ContextHandler.html
+
+| Run with prefix patterns
+| | [Documentation]
+| | ... | keyword_doc creates index.html and library documentation
+| | ${rc} | ${output} | Run And Return Rc And Output | keyword_doc tests/sample_resources ${docu_dir} allure-robotframework
+| | Should Be Equal As Integers | 0 | ${rc}
+| | File Should Exist | ${docu_dir}${/}index.html
+| | File Should Exist | ${docu_dir}${/}BuiltIn.html
+| | File Should Exist | ${docu_dir}${/}AllureLibrary.html
+| | File Should Exist | ${docu_dir}${/}allure_robotframework.html
 | | File Should Exist | ${docu_dir}${/}eb_keyword${/}ContextHandler.html

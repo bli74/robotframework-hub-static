@@ -38,5 +38,5 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Run Robot tests
       run: |
-        python -m pip install .
+        python -m pip install .[test]
         robot -A tests/conf/default.args tests

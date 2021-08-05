@@ -17,6 +17,9 @@ install_requires_packages: list = [
     'Jinja2>=2.11.3',
     'robotframework>=2.8.5'
 ]
+test_requires_packages: list = [
+    'allure-robotframework'
+]
 
 
 setup(
@@ -37,6 +40,9 @@ setup(
     python_requires=">=3.6",
     setup_requires=setup_requires_packages,
     install_requires=install_requires_packages,
+      extras_require={
+          'test': test_requires_packages,
+    },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: Apache Software License",

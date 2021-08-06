@@ -31,10 +31,9 @@
 | Run with prefix patterns
 | | [Documentation]
 | | ... | keyword_doc creates index.html and library documentation
-| | ${rc} | ${output} | Run And Return Rc And Output | keyword_doc tests/sample_resources ${docu_dir} allure-robotframework
+| | ${rc} | ${output} | Run And Return Rc And Output | keyword_doc tests/sample_resources ${docu_dir} robotframework-requests
 | | Should Be Equal As Integers | 0 | ${rc}
 | | File Should Exist | ${docu_dir}${/}index.html
 | | File Should Exist | ${docu_dir}${/}BuiltIn.html
-| | File Should Exist | ${docu_dir}${/}AllureLibrary.html
-| | File Should Exist | ${docu_dir}${/}allure_robotframework.html
+| | File Should Exist | ${docu_dir}${/}RequestsLibrary.html
 | | File Should Exist | ${docu_dir}${/}eb_keyword${/}ContextHandler.html

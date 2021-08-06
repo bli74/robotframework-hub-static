@@ -1,3 +1,4 @@
+import importlib.metadata
 import os
 import re
 import shutil
@@ -7,7 +8,6 @@ from io import StringIO
 from typing import List, Dict
 from urllib.parse import quote
 
-import robot
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from robot.libdoc import LibDoc
 from robot.libraries import STDLIBS
@@ -67,42 +67,30 @@ def generate_doc_builtin(out_path: str) -> Dict:
     return result_dict
 
 
-def get_robot_modules(package_prefixes: List[str]) -> List[str]:
-    result = []
-    exclude_libraries = ['robot', 'rfhub', 'rfhub_static']
-    # Collect regex to match 'robotframework' and any entry of package_prefixes.
-    _package_prefixes_full = []
-    for _package_prefix in package_prefixes:
-        _package_prefixes_full.append('^' + _package_prefix.replace('-', '[-_]') + '.*[.]dist-info$')
-    regex_any_prefix = '(?:%s)' % '|'.join(_package_prefixes_full)
-    # Get parent directory of directory 'robot'
-    library_base_dir = os.path.dirname(robot.__file__)
-    library_base_dir = os.path.dirname(library_base_dir)
-    for dir_entry in sorted(os.listdir(library_base_dir)):
-        dir_entry_path = os.path.join(library_base_dir, dir_entry)
-        # Just consider directories, that match any prefixes
-        if os.path.isdir(dir_entry_path) \
-                and re.match(regex_any_prefix, dir_entry):
-            # Read library name from package metadata
-            top_level_file = os.path.join(dir_entry_path, 'top_level.txt')
-            if os.path.exists(top_level_file):
-                with open(top_level_file) as f:
-                    file_data = f.read()
-                    file_lines = file_data.split('\n')
-                    for _line in file_lines:
-                        _line = _line.strip()
-                        if _line and _line not in exclude_libraries:
-                            result.append(_line)
-    return result
+def get_robot_modules() -> List[str]:
+    distributions = importlib.metadata.distributions()
+    library_names = []
+    for distribution in distributions:
+        if distribution.requires \
+                and any('robotframework' == requirement.split(' ')[0] for requirement in distribution.requires):
+            # Collect top-level directory names of Python files
+            for file in distribution.files:
+                if file.suffix == '.py':
+                    library_name = file.parts[0]
+                    if library_name not in library_names \
+                            and not re.match('^rfhub.*', library_name):
+                        library_names.append(library_name)
+    return sorted(library_names)
 
 
-def generate_doc_libraries(out_path: str, package_prefixes: List[str]) -> Dict:
+def generate_doc_libraries(out_path: str) -> Dict:
     result_dict = {}
-    directory_list = get_robot_modules(package_prefixes)
+    directory_list = get_robot_modules()
     for directory in sorted(directory_list):
         result_dict.update(
             generate_doc_file(directory, out_path, os.path.join(out_path, directory + '.html'), directory))
     return result_dict
+
 
 def get_resource_file_list(directory_path: str, exclude_patterns: List[str]) -> List[str]:
     _ignore_file = os.path.join(directory_path, ".rfhubignore")
@@ -128,17 +116,18 @@ def get_resource_file_list(directory_path: str, exclude_patterns: List[str]) -> 
         if os.path.isdir(entry_path) \
                 and not entry_name.startswith(".") \
                 and os.access(entry_path, os.R_OK):
-            file_list += get_resource_file_list (entry_path, exclude_patterns=_exclude_patterns)
+            file_list += get_resource_file_list(entry_path, exclude_patterns=_exclude_patterns)
         elif not entry_name.startswith("."):
             splitext = os.path.splitext(entry_name)
             if splitext[1] in ['.resource', '.txt', '.py']:
                 file_list.append(entry_path)
     return file_list
 
-def generate_documentation(in_path: str, out_path: str) -> Dict:
+
+def generate_doc_resource_files(in_path: str, out_path: str) -> Dict:
     file_list = get_resource_file_list(in_path, [])
     result_dict = {}
-    in_path_full  = os.path.abspath(in_path)
+    in_path_full = os.path.abspath(in_path)
     out_path_full = os.path.abspath(out_path)
     for file in sorted(file_list):
         splitext = os.path.splitext(os.path.basename(file))
@@ -164,7 +153,7 @@ def create_index_page(out_path: str, template_directory: str, library_list: List
     print('Done')
 
 
-def do_it(in_path: str, out_path: str, package_prefixes: List[str]) -> None:
+def do_it(in_path: str, out_path: str) -> None:
     if not os.path.exists(in_path):
         print("ERROR: Specified base path " + in_path + ' does not exist.')
         sys.exit(2)
@@ -187,8 +176,8 @@ def do_it(in_path: str, out_path: str, package_prefixes: List[str]) -> None:
     shutil.copytree(static_src, static_dst)
 
     builtin_dict = generate_doc_builtin(out_path)
-    library_dict = generate_doc_libraries(out_path, package_prefixes)
-    resource_dict = generate_documentation(in_path, out_path)
+    library_dict = generate_doc_libraries(out_path)
+    resource_dict = generate_doc_resource_files(in_path, out_path)
 
     all_libraries = builtin_dict.copy()
     all_libraries.update(library_dict)
@@ -211,29 +200,12 @@ def kw_doc_gen():
               'base directory:          Top level directory to scan for resource files. \n' +
               'documentation_directory: Directory to store the documentation files.\n' +
               '                         The directory will be cleaned up before the\n' +
-              '                         new documentation is created.\n' +
-              'library_prefix:          Optional list of Python package prefixes that are\n' +
-              '                         scanned for keywords in addition to robot built-in\n' +
-              '                         libraries.\n\n' +
+              '                         new documentation is created.\n\n' +
               'Examples:\n\n' +
               '   ' + prg_name + '  ~/robot_tests ~/robot_kw_docu\n' +
               '   -> Scans for robot keywords in:\n' +
               '      - robotframework internal libraries\n' +
-              '      - python packages starting with "robotframework"\n' +
-              '      - robot resource files in all subdirectories of ~/robot_tests \n' +
-              '   -> Generates documentation in ~/robot_kw_docu:\n' +
-              '      - index.html with table of content\n' +
-              '      - <module>.html with keywords of the libraries\n' +
-              '      - <path/to/resource>.html with keywords of resource file\n\n' +
-              '   -> reads robotframework internal keyword libraries\n' +
-              '   -> reads robotframework internal keyword libraries\n' +
-              '   -> reads robotframework internal keyword libraries\n' +
-              '\n' +
-              '   ' + prg_name + '  ~/robot_tests ~/robot_kw_docu bssf_btap_common bssf_btap_fnt\n' +
-              '   -> Scans for robot keywords in:\n' +
-              '      - robotframework internal libraries\n' +
-              '      - python packages starting with "robotframework"\n' +
-              '      - python packages starting with "bssf_btap_common" and "bssf_btap_fnt"\n' +
+              '      - python packages that have requirement "robotframework"\n' +
               '      - robot resource files in all subdirectories of ~/robot_tests \n' +
               '   -> Generates documentation in ~/robot_kw_docu:\n' +
               '      - index.html with table of content\n' +
@@ -243,10 +215,7 @@ def kw_doc_gen():
         sys.exit(2)
     in_path = sys.argv[1]
     out_path = sys.argv[2]
-    package_prefixes = ['robotframework']
-    for package_prefix in sys.argv[3:]:
-        package_prefixes.append(package_prefix)
-    do_it(in_path, out_path, package_prefixes)
+    do_it(in_path, out_path)
 
 
 if __name__ == '__main__':

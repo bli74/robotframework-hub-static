@@ -18,7 +18,7 @@ install_requires_packages: list = [
     'robotframework>=2.8.5'
 ]
 test_requires_packages: list = [
-    'allure-robotframework'
+    'robotframework-requests'
 ]
 
 
@@ -37,7 +37,7 @@ setup(
     long_description_content_type="text/markdown",
     zip_safe=True,
     include_package_data=True,
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     setup_requires=setup_requires_packages,
     install_requires=install_requires_packages,
       extras_require={

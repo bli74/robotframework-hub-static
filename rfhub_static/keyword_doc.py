@@ -60,7 +60,7 @@ def generate_doc_file(lib_file_or_resource: str, out_dir: str, out_file: str, li
 def generate_doc_builtin(out_path: str) -> Dict:
     result_dict = {}
     for lib in sorted(STDLIBS):
-        if lib not in ['Easter']:
+        if lib not in ['Easter','Reserved']:
             file_name_rel = lib + '.html'
             file_path = os.path.join(out_path, file_name_rel)
             result_dict.update(generate_doc_file(lib, out_path, file_path, lib))

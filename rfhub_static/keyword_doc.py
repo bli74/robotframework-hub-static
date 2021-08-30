@@ -31,7 +31,7 @@ def generate_doc_file(lib_file_or_resource: str, out_dir: str, out_file: str, li
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
         with redirect_stdout(out), redirect_stderr(err):
-            result = libdoc_instance.execute(lib_file_or_resource, out_file, docformat='ROBOT', name=lib_name)
+            result = libdoc_instance.execute(lib_file_or_resource, out_file, name=lib_name)
         if result != 0 and os.path.exists(out_file):
             # Remove output file in case of an error
             os.remove(out_file)
@@ -71,8 +71,17 @@ def get_robot_modules() -> List[str]:
     distributions = importlib.metadata.distributions()
     library_names = []
     for distribution in distributions:
-        if distribution.requires \
-                and any('robotframework' == requirement.split(' ')[0] for requirement in distribution.requires):
+        # Includes packages with 'robotframework' in name
+        possible_robot_library = False
+        for item in distribution.metadata.items():
+            if item[0] == 'Name' and item[1] != 'robotframework':
+                possible_robot_library = 'robotframework' in item[1]
+        # Include also packages that require robotframework
+        if not possible_robot_library:
+            possible_robot_library = distribution.requires \
+                                     and any('robotframework' == requirement.split(' ')[0] \
+                                             for requirement in distribution.requires)
+        if possible_robot_library:
             # Collect top-level directory names of Python files
             for file in distribution.files:
                 if file.suffix == '.py':

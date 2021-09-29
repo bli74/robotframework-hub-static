@@ -11,11 +11,12 @@ from urllib.parse import quote
 from jinja2 import Environment, select_autoescape, FileSystemLoader
 from robot.libdoc import LibDoc
 from robot.libraries import STDLIBS
+from robot.output.logger import LOGGER, Logger
 
 from rfhub_static.version import __version__ as pkg_version
 
 libdoc_instance = LibDoc()
-
+LOGGER.unregister_console_logger()
 
 def generate_doc_file(lib_file_or_resource: str, out_dir: str, out_file: str, lib_name: str) -> Dict:
     result_dict = {}

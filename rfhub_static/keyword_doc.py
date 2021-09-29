@@ -30,8 +30,9 @@ def generate_doc_file(lib_file_or_resource: str, out_dir: str, out_file: str, li
         # The 'libdoc' call was successful and there are keywords
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
+        lib_base_name = os.path.basename(lib_name)
         with redirect_stdout(out), redirect_stderr(err):
-            result = libdoc_instance.execute(lib_file_or_resource, out_file, name=lib_name)
+            result = libdoc_instance.execute(lib_file_or_resource, out_file, name=lib_base_name)
         if result != 0 and os.path.exists(out_file):
             # Remove output file in case of an error
             os.remove(out_file)

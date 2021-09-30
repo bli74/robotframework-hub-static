@@ -130,7 +130,7 @@ def get_resource_file_list(directory_path: str, exclude_patterns: List[str]) -> 
             file_list += get_resource_file_list(entry_path, exclude_patterns=_exclude_patterns)
         elif not entry_name.startswith("."):
             splitext = os.path.splitext(entry_name)
-            if splitext[1] in ['.resource', '.txt', '.py']:
+            if splitext[1] in ['.resource', '.txt', '.py', '.robot']:
                 file_list.append(entry_path)
     return file_list
 
